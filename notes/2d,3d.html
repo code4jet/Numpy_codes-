@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NumPy Indexing — 2D & 3D</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2333;
+    --border: #2a3045;
+    --green: #00e5a0;
+    --green-dim: #003d2b;
+    --green-text: #00e5a0;
+    --text: #e8eaf0;
+    --muted: #7a85a3;
+    --highlight: #00e5a0;
+    --code-bg: #0a0d14;
+    --result: #00c87a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+  .container { max-width: 860px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--green-dim);
+    border: 1px solid var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px; font-weight: 600; color: var(--green);
+  }
+  h1 { font-size: 22px; font-weight: 700; color: var(--text); }
+  h1 span { color: var(--green); }
+  .subtitle { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+  /* Chapter bars */
+  .ch-bar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 1.2rem;
+  }
+  .ch-num {
+    width: 30px; height: 30px; border-radius: 7px;
+    background: var(--green-dim); border: 1px solid var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: var(--green);
+    flex-shrink: 0;
+  }
+  .ch-title { font-size: 15px; font-weight: 600; }
+  .ch-sub { font-size: 12px; color: var(--muted); margin-left: auto; font-family: 'JetBrains Mono', monospace; }
+
+  /* Topic blocks */
+  .topic {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+  .topic-head {
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .topic-tag {
+    font-size: 11px; font-weight: 600; padding: 2px 8px;
+    border-radius: 20px; background: var(--green-dim);
+    border: 1px solid var(--green); color: var(--green);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .topic-title { font-size: 13px; font-weight: 600; }
+  .topic-body { padding: 14px; }
+  .what {
+    font-size: 12px; color: var(--muted); margin-bottom: 12px;
+    line-height: 1.6; padding: 8px 12px;
+    background: var(--code-bg); border-radius: 7px;
+    border-left: 3px solid var(--green);
+  }
+
+  /* Grid cells */
+  .grid-wrap { display: flex; gap: 6px; align-items: flex-start; margin: 10px 0; flex-wrap: wrap; }
+  .grid-container { display: flex; flex-direction: column; }
+  .col-labels { display: flex; gap: 3px; margin-bottom: 3px; margin-left: 30px; }
+  .col-lbl { width: 34px; text-align: center; font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  .grid-rows { display: flex; gap: 3px; }
+  .row-lbls { display: flex; flex-direction: column; gap: 3px; margin-right: 4px; }
+  .row-lbl { width: 26px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  .grid { display: grid; gap: 3px; }
+  .g3 { grid-template-columns: repeat(3, 34px); }
+  .g4 { grid-template-columns: repeat(4, 34px); }
+  .cell {
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+    color: var(--muted);
+    transition: background 0.2s;
+  }
+  .cell.hi {
+    background: var(--green-dim); border-color: var(--green);
+    color: var(--green);
+  }
+  .cell.faded { opacity: 0.3; }
+
+  /* Code lines */
+  .code-section { margin: 10px 0; }
+  .step-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin: 8px 0 4px; }
+  .code-line {
+    display: flex; align-items: center; gap: 8px;
+    margin: 4px 0; flex-wrap: wrap;
+  }
+  .ct {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 5px; padding: 3px 8px; color: var(--text);
+  }
+  .ct.res {
+    background: var(--green-dim); border-color: var(--green);
+    color: var(--green); font-weight: 600;
+  }
+  .arr { color: var(--muted); font-size: 12px; }
+
+  /* Note pill */
+  .note {
+    font-size: 12px; color: var(--muted); line-height: 1.5;
+    margin-top: 10px; padding: 8px 12px;
+    background: var(--code-bg); border-radius: 7px;
+    border-left: 3px solid #3a4060;
+  }
+  .note strong { color: var(--text); font-weight: 600; }
+
+  /* Layers (3D) */
+  .layers { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; margin: 10px 0; }
+  .layer-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .layer-title { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  .plus-sign { font-size: 20px; color: var(--border); align-self: center; padding-top: 20px; }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+
+  /* ML tip box */
+  .ml-tip {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 14px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 8px; margin-top: 10px;
+  }
+  .ml-badge {
+    flex-shrink: 0; font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 4px;
+    background: #1a1040; border: 1px solid #6040d0;
+    color: #9070f0; font-family: 'JetBrains Mono', monospace;
+  }
+  .ml-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .ml-text strong { color: var(--text); }
+
+  /* Summary box */
+  .summary {
+    margin-top: 2rem; padding: 16px 20px;
+    background: var(--surface); border: 1px solid var(--green);
+    border-radius: 12px;
+  }
+  .summary h3 { font-size: 14px; font-weight: 700; color: var(--green); margin-bottom: 10px; }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sum-item { background: var(--code-bg); border-radius: 7px; padding: 10px 12px; }
+  .sum-code { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--green); font-weight: 600; margin-bottom: 4px; }
+  .sum-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-icon">np</div>
+    <div>
+      <h1>NumPy <span>Indexing & Slicing</span></h1>
+      <div class="subtitle">2D & 3D arrays — explanation + dry run — for ML</div>
+    </div>
+  </div>
+
+  <!-- ===== 2D ===== -->
+  <div class="ch-bar">
+    <div class="ch-num">2D</div>
+    <span class="ch-title">2D Array Indexing & Slicing</span>
+    <span class="ch-sub">shape (3, 4)</span>
+  </div>
+
+  <!-- arr[1,2] -->
+  <div class="topic">
+    <div class="topic-head">
+      <span class="topic-tag">arr[row, col]</span>
+      <span class="topic-title">Single element — arr[1, 2]</span>
+    </div>
+    <div class="topic-body">
+      <div class="what">Pick one exact cell. Give row number and column number separated by comma. Think: row first, col second.</div>
+      <div class="grid-wrap">
+        <div class="grid-container">
+          <div class="col-labels">
+            <div class="col-lbl">c0</div><div class="col-lbl">c1</div><div class="col-lbl">c2</div><div class="col-lbl">c3</div>
+          </div>
+          <div class="grid-rows">
+            <div class="row-lbls">
+              <div class="row-lbl">r0</div><div class="row-lbl">r1</div><div class="row-lbl">r2</div>
+            </div>
+            <div class="grid g4">
+              <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div>
+              <div class="cell">5</div><div class="cell">6</div><div class="cell hi">7</div><div class="cell">8</div>
+              <div class="cell">9</div><div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="code-section">
+        <div class="step-label">Dry run</div>
+        <div class="code-line"><span class="ct">arr[1, 2]</span><span class="arr">→ row 1 = [5,6,7,8] → col 2 →</span><span class="ct res">7</span></div>
+      </div>
+      <div class="note"><strong>Short note:</strong> arr[row, col] — always row first, col second. Like reading a map: latitude then longitude.</div>
+    </div>
+  </div>
+
+  <!-- full row -->
+  <div class="topic">
+    <div class="topic-head">
+      <span class="topic-tag">arr[row, :]</span>
+      <span class="topic-title">Full row — arr[1, :]</span>
+    </div>
+    <div class="topic-body">
+      <div class="what">Grab entire row. ":" in column position = all columns. In ML: one complete data sample (all features).</div>
+      <div class="grid-wrap">
+        <div class="grid-container">
+          <div class="grid-rows">
+            <div class="row-lbls">
+              <div class="row-lbl">r0</div><div class="row-lbl">r1</div><div class="row-lbl">r2</div>
+            </div>
+            <div class="grid g4">
+              <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div>
+              <div class="cell hi">5</div><div class="cell hi">6</div><div class="cell hi">7</div><div class="cell hi">8</div>
+              <div class="cell">9</div><div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="code-section">
+        <div class="step-label">Dry run</div>
+        <div class="code-line"><span class="ct">arr[1, :]</span><span class="arr">→ row 1, all cols →</span><span class="ct res">[5, 6, 7, 8]</span></div>
+      </div>
+      <div class="ml-tip">
+        <span class="ml-badge">ML</span>
+        <span class="ml-text"><strong>arr[i, :]</strong> = grab sample i with all its features. Used when feeding one row into a model.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- full column -->
+  <div class="topic">
+    <div class="topic-head">
+      <span class="topic-tag">arr[:, col]</span>
+      <span class="topic-title">Full column — arr[:, 2]</span>
+    </div>
+    <div class="topic-body">
+      <div class="what">Grab entire column. ":" in row position = all rows. In ML: one feature across all samples.</div>
+      <div class="grid-wrap">
+        <div class="grid-container">
+          <div class="grid-rows">
+            <div class="row-lbls">
+              <div class="row-lbl">r0</div><div class="row-lbl">r1</div><div class="row-lbl">r2</div>
+            </div>
+            <div class="grid g4">
+              <div class="cell">1</div><div class="cell">2</div><div class="cell hi">3</div><div class="cell">4</div>
+              <div class="cell">5</div><div class="cell">6</div><div class="cell hi">7</div><div class="cell">8</div>
+              <div class="cell">9</div><div class="cell">10</div><div class="cell hi">11</div><div class="cell">12</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="code-section">
+        <div class="step-label">Dry run</div>
+        <div class="code-line"><span class="ct">arr[:, 2]</span><span class="arr">→ all rows, col 2 →</span><span class="ct res">[3, 7, 11]</span></div>
+      </div>
+      <div class="ml-tip">
+        <span class="ml-badge">ML</span>
+        <span class="ml-text"><strong>arr[:, j]</strong> = grab feature j for all samples. Used for normalization of one feature.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- sub-matrix -->
+  <div class="topic">
+    <div class="topic-head">
+      <span class="topic-tag">arr[r1:r2, c1:c2]</span>
+      <span class="topic-title">Sub-matrix slice — arr[0:2, 1:3]</span>
+    </div>
+    <div class="topic-body">
+      <div class="what">Slice both rows AND columns at once. Stop index is always excluded. Gets a smaller chunk of the matrix.</div>
+      <div class="grid-wrap">
+        <div class="grid-container">
+          <div class="col-labels">
+            <div class="col-lbl">c0</div><div class="col-lbl">c1</div><div class="col-lbl">c2</div><div class="col-lbl">c3</div>
+          </div>
+          <div class="grid-rows">
+            <div class="row-lbls">
+              <div class="row-lbl">r0</div><div class="row-lbl">r1</div><div class="row-lbl">r2</div>
+            </div>
+            <div class="grid g4">
+              <div class="cell">1</div><div class="cell hi">2</div><div class="cell hi">3</div><div class="cell">4</div>
+              <div class="cell">5</div><div class="cell hi">6</div><div class="cell hi">7</div><div class="cell">8</div>
+              <div class="cell">9</div><div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="code-section">
+        <div class="step-label">Dry run</div>
+        <div class="code-line"><span class="arr">rows 0:2</span><span class="arr">→</span><span class="ct">row 0, row 1</span><span class="arr">(row 2 excluded)</span></div>
+        <div class="code-line"><span class="arr">cols 1:3</span><span class="arr">→</span><span class="ct">col 1, col 2</span><span class="arr">(col 3 excluded)</span></div>
+        <div class="code-line"><span class="ct">arr[0:2, 1:3]</span><span class="arr">→</span><span class="ct res">[[2, 3], [6, 7]]</span></div>
+      </div>
+      <div class="note"><strong>Short note:</strong> Think of it as drawing a rectangle on the grid. The highlighted green cells are what you get.</div>
+    </div>
+  </div>
+
+  <!-- negative slicing -->
+  <div class="topic">
+    <div class="topic-head">
+      <span class="topic-tag">arr[-1, :] / arr[:, -1]</span>
+      <span class="topic-title">Negative indexing in 2D</span>
+    </div>
+    <div class="topic-body">
+      <div class="what">Negative index counts from the end. -1 = last, -2 = second from last.</div>
+      <div class="grid-wrap">
+        <div class="grid-container">
+          <div class="grid-rows">
+            <div class="row-lbls">
+              <div class="row-lbl">r0</div><div class="row-lbl">r1</div><div class="row-lbl">r2</div>
+            </div>
+            <div class="grid g4">
+              <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell hi">4</div>
+              <div class="cell">5</div><div class="cell">6</div><div class="cell">7</div><div class="cell hi">8</div>
+              <div class="cell hi">9</div><div class="cell hi">10</div><div class="cell hi">11</div><div class="cell hi">12</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="code-section">
+        <div class="step-label">Dry run</div>
+        <div class="code-line"><span class="ct">arr[-1, :]</span><span class="arr">→ last row →</span><span class="ct res">[9, 10, 11, 12]</span></div>
+        <div class="code-line"><span class="ct">arr[:, -1]</span><span class="arr">→ last col →</span><span class="ct res">[4, 8, 12]</span></div>
+      </div>
+      <div class="note"><strong>Short note:</strong> arr[-1, :] and arr[:, -1] are used constantly in sequence models to grab the last output.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ===== 3D ===== -->
+  <div class="ch-bar">
+    <div class="ch-num">3D</div>
+    <span class="ch-title">3D Array Indexing & Slicing</span>
+    <span class="ch-sub">shape (2, 3, 3)</span>
+  </div>
+
+  <!-- concept -->
+  <div class="topic">
+    <div class="topic-head">
+      <span class="topic-tag">concept</span>
+      <span class="topic-title">What is a 3D array?</span>
+    </div>
+    <div class="topic-body">
+      <div class="what">3D = stack of 2D grids. Like a book with multiple pages. Each page is a 2D matrix. Syntax: arr[layer, row, col]</div>
+      <div class="layers">
+        <div class="layer-wrap">
+          <div class="layer-title">layer 0 (page 1)</div>
+          <div class="grid g3">
+            <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div>
+            <div class="cell">4</div><div class="cell">5</div><div class="cell">6</div>
+            <div class="cell">7</div><div class="cell">8</div><div class="cell">9</div>
+          </div>
+        </div>
+        <div class="plus-sign">+</div>
+        <div class="layer-wrap">
+          <div class="layer-title">layer 1 (page 2)</div>
+          <div class="grid g3">
+            <div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
+            <div class="cell">13</div><div class="cell">14</div><div class="cell">15</div>
+            <div class="cell">16</div><div class="cell">17</div><div class="cell">18</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-section">
+        <div class="code-line"><span class="ct">arr.shape</span><span class="arr">→</span><span class="ct res">(2, 3, 3)</span><span class="arr">= 2 layers, 3 rows, 3 cols</span></div>
+      </div>
+      <div class="ml-tip">
+        <span class="ml-badge">ML</span>
+        <span class="ml-text">Images = 3D array. Shape = <strong>(height, width, channels)</strong>. A batch of images = 4D: <strong>(batch, height, width, channels)</strong>.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- arr[0] -->
+  <div class="topic">
+    <div class="topic-head">
+      <span class="topic-tag">arr[layer]</span>
+      <span class="topic-title">One full 2D layer — arr[0]</span>
+    </div>
+    <div class="topic-body">
+      <div class="what">Give only one index = pick one whole layer. Returns a 2D array. Like picking one page from a book.</div>
+      <div class="layers">
+        <div class="layer-wrap">
+          <div class="layer-title">layer 0 ✓ selected</div>
+          <div class="grid g3">
+            <div class="cell hi">1</div><div class="cell hi">2</div><div class="cell hi">3</div>
+            <div class="cell hi">4</div><div class="cell hi">5</div><div class="cell hi">6</div>
+            <div class="cell hi">7</div><div class="cell hi">8</div><div class="cell hi">9</div>
+          </div>
+        </div>
+        <div class="plus-sign">+</div>
+        <div class="layer-wrap">
+          <div class="layer-title">layer 1 ✗ ignored</div>
+          <div class="grid g3" style="opacity:0.25">
+            <div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
+            <div class="cell">13</div><div class="cell">14</div><div class="cell">15</div>
+            <div class="cell">16</div><div class="cell">17</div><div class="cell">18</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-section">
+        <div class="step-label">Dry run</div>
+        <div class="code-line"><span class="ct">arr[0]</span><span class="arr">→ entire layer 0 →</span><span class="ct res">[[1,2,3],[4,5,6],[7,8,9]]</span></div>
+      </div>
+      <div class="ml-tip">
+        <span class="ml-badge">ML</span>
+        <span class="ml-text"><strong>batch[0]</strong> = grab the first image from a batch of images.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- arr[1,2,0] -->
+  <div class="topic">
+    <div class="topic-head">
+      <span class="topic-tag">arr[l, r, c]</span>
+      <span class="topic-title">Single element in 3D — arr[1, 2, 0]</span>
+    </div>
+    <div class="topic-body">
+      <div class="what">Navigate all 3 dimensions to get one value. Layer first → row second → col third.</div>
+      <div class="layers">
+        <div class="layer-wrap">
+          <div class="layer-title">layer 1 → row 2 → col 0</div>
+          <div class="grid g3">
+            <div class="cell faded">10</div><div class="cell faded">11</div><div class="cell faded">12</div>
+            <div class="cell faded">13</div><div class="cell faded">14</div><div class="cell faded">15</div>
+            <div class="cell hi">16</div><div class="cell faded">17</div><div class="cell faded">18</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-section">
+        <div class="step-label">Dry run step by step</div>
+        <div class="code-line"><span class="arr">step 1</span><span class="ct">arr[1]</span><span class="arr">→ layer 1 = [[10,11,12],[13,14,15],[16,17,18]]</span></div>
+        <div class="code-line"><span class="arr">step 2</span><span class="ct">arr[1][2]</span><span class="arr">→ row 2 = [16, 17, 18]</span></div>
+        <div class="code-line"><span class="arr">step 3</span><span class="ct">arr[1][2][0]</span><span class="arr">→</span><span class="ct res">16</span></div>
+        <div class="code-line" style="margin-top:6px"><span class="arr">shorthand:</span><span class="ct">arr[1, 2, 0]</span><span class="arr">→</span><span class="ct res">16</span></div>
+      </div>
+      <div class="note"><strong>Short note:</strong> arr[1,2,0] is same as arr[1][2][0]. Comma style is cleaner and faster.</div>
+    </div>
+  </div>
+
+  <!-- arr[:,1,:] -->
+  <div class="topic">
+    <div class="topic-head">
+      <span class="topic-tag">arr[:, row, :]</span>
+      <span class="topic-title">Same row from ALL layers — arr[:, 1, :]</span>
+    </div>
+    <div class="topic-body">
+      <div class="what">Colon in layer and col position = all layers, all cols. Pick row 1 from every layer at once.</div>
+      <div class="layers">
+        <div class="layer-wrap">
+          <div class="layer-title">layer 0 — row 1</div>
+          <div class="grid g3">
+            <div class="cell faded">1</div><div class="cell faded">2</div><div class="cell faded">3</div>
+            <div class="cell hi">4</div><div class="cell hi">5</div><div class="cell hi">6</div>
+            <div class="cell faded">7</div><div class="cell faded">8</div><div class="cell faded">9</div>
+          </div>
+        </div>
+        <div class="plus-sign">+</div>
+        <div class="layer-wrap">
+          <div class="layer-title">layer 1 — row 1</div>
+          <div class="grid g3">
+            <div class="cell faded">10</div><div class="cell faded">11</div><div class="cell faded">12</div>
+            <div class="cell hi">13</div><div class="cell hi">14</div><div class="cell hi">15</div>
+            <div class="cell faded">16</div><div class="cell faded">17</div><div class="cell faded">18</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-section">
+        <div class="step-label">Dry run</div>
+        <div class="code-line"><span class="arr">all layers (:)</span><span class="arr">+ row 1 +</span><span class="arr">all cols (:)</span></div>
+        <div class="code-line"><span class="ct">arr[:, 1, :]</span><span class="arr">→</span><span class="ct res">[[4,5,6], [13,14,15]]</span></div>
+      </div>
+      <div class="ml-tip">
+        <span class="ml-badge">ML</span>
+        <span class="ml-text">In image processing: grab the same horizontal strip from every image in a batch.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D sub-cube -->
+  <div class="topic">
+    <div class="topic-head">
+      <span class="topic-tag">arr[l1:l2, r1:r2, c1:c2]</span>
+      <span class="topic-title">3D sub-cube — arr[0:2, 0:2, 0:2]</span>
+    </div>
+    <div class="topic-body">
+      <div class="what">Slice all 3 dimensions at once. Gets a smaller 3D chunk. Like cropping a patch from multiple images.</div>
+      <div class="layers">
+        <div class="layer-wrap">
+          <div class="layer-title">layer 0 — top-left 2×2</div>
+          <div class="grid g3">
+            <div class="cell hi">1</div><div class="cell hi">2</div><div class="cell faded">3</div>
+            <div class="cell hi">4</div><div class="cell hi">5</div><div class="cell faded">6</div>
+            <div class="cell faded">7</div><div class="cell faded">8</div><div class="cell faded">9</div>
+          </div>
+        </div>
+        <div class="plus-sign">+</div>
+        <div class="layer-wrap">
+          <div class="layer-title">layer 1 — top-left 2×2</div>
+          <div class="grid g3">
+            <div class="cell hi">10</div><div class="cell hi">11</div><div class="cell faded">12</div>
+            <div class="cell hi">13</div><div class="cell hi">14</div><div class="cell faded">15</div>
+            <div class="cell faded">16</div><div class="cell faded">17</div><div class="cell faded">18</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-section">
+        <div class="step-label">Dry run</div>
+        <div class="code-line"><span class="arr">layers 0:2</span><span class="arr">→</span><span class="ct">layer 0 and layer 1</span></div>
+        <div class="code-line"><span class="arr">rows 0:2</span><span class="arr">→</span><span class="ct">row 0 and row 1</span></div>
+        <div class="code-line"><span class="arr">cols 0:2</span><span class="arr">→</span><span class="ct">col 0 and col 1</span></div>
+        <div class="code-line"><span class="ct">arr[0:2, 0:2, 0:2]</span><span class="arr">→</span><span class="ct res">[[[1,2],[4,5]], [[10,11],[13,14]]]</span></div>
+      </div>
+      <div class="ml-tip">
+        <span class="ml-badge">ML</span>
+        <span class="ml-text">In CNNs: crop the same patch region from all images in a batch at once.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary">
+    <h3>Quick Reference — All Rules</h3>
+    <div class="summary-grid">
+      <div class="sum-item">
+        <div class="sum-code">arr[r, c]</div>
+        <div class="sum-desc">2D single element. Row first, col second.</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-code">arr[r, :]</div>
+        <div class="sum-desc">Full row r. ":" = all columns.</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-code">arr[:, c]</div>
+        <div class="sum-desc">Full column c. ":" = all rows.</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-code">arr[r1:r2, c1:c2]</div>
+        <div class="sum-desc">Sub-matrix. Stop index excluded.</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-code">arr[l, r, c]</div>
+        <div class="sum-desc">3D single element. Layer → row → col.</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-code">arr[l]</div>
+        <div class="sum-desc">Full 2D layer l from 3D array.</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-code">arr[:, r, :]</div>
+        <div class="sum-desc">Row r from every layer in 3D.</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-code">arr[-1]</div>
+        <div class="sum-desc">Last element/row/layer. Works in all dims.</div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:12px"><strong>Golden rule:</strong> ":" always means "give me everything in this dimension." This one rule works in 2D, 3D, 4D — any number of dimensions.</div>
+  </div>
+
+</div>
+</body>
+</html>
