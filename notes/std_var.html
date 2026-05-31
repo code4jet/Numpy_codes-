@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Std & Var — NumPy Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --teal: #1D9E75;
+    --teal-light: #E1F5EE;
+    --teal-mid: #5DCAA5;
+    --blue: #2563EB;
+    --blue-light: #EFF6FF;
+    --amber: #D97706;
+    --amber-light: #FFFBEB;
+    --gray-50: #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-400: #9CA3AF;
+    --gray-600: #4B5563;
+    --gray-800: #1F2937;
+    --gray-900: #111827;
+    --font: 'Sora', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font);
+    background: #F0FDF9;
+    color: var(--gray-900);
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    animation: fadeUp 0.6s ease both;
+  }
+  .header .badge {
+    display: inline-block;
+    background: var(--teal);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 99px;
+    margin-bottom: 14px;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    line-height: 1.15;
+  }
+  .header h1 span { color: var(--teal); }
+  .header p {
+    font-size: 1rem;
+    color: var(--gray-600);
+    margin-top: 8px;
+  }
+
+  /* Two column layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid var(--gray-200);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+  .card.std::before { background: var(--teal); }
+  .card.var::before { background: var(--blue); }
+
+  .card-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  .std .card-icon { background: var(--teal-light); }
+  .var .card-icon { background: var(--blue-light); }
+
+  .card h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card h2 code {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    background: var(--gray-100);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    color: var(--gray-800);
+  }
+  .card p.def {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    line-height: 1.65;
+    margin-bottom: 1rem;
+  }
+
+  /* Formula box */
+  .formula-box {
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    font-family: var(--mono);
+  }
+  .std .formula-box { background: var(--teal-light); border: 1px solid #9FE1CB; }
+  .var .formula-box { background: var(--blue-light); border: 1px solid #BFDBFE; }
+
+  .formula-box .flabel {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-family: var(--font);
+  }
+  .std .formula-box .flabel { color: #0F6E56; }
+  .var .formula-box .flabel { color: #1D4ED8; }
+
+  .formula-box .ftext {
+    font-size: 0.85rem;
+    line-height: 1.8;
+    white-space: pre;
+  }
+  .std .formula-box .ftext { color: #085041; }
+  .var .formula-box .ftext { color: #1E3A8A; }
+
+  /* Step list inside formula */
+  .steps { list-style: none; padding: 0; }
+  .steps li {
+    font-size: 0.82rem;
+    color: var(--gray-600);
+    padding: 3px 0 3px 18px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .steps li::before {
+    content: attr(data-n);
+    position: absolute; left: 0;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--teal);
+    font-family: var(--mono);
+  }
+  .var .steps li::before { color: var(--blue); }
+
+  /* What you learn section */
+  .info-section {
+    animation: fadeUp 0.6s 0.2s ease both;
+    margin-bottom: 1.25rem;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+
+  .info-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.4rem;
+    border: 1px solid var(--gray-200);
+  }
+
+  .info-card h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .info-card.std-info h3 { color: var(--teal); }
+  .info-card.var-info h3 { color: var(--blue); }
+
+  .info-list { list-style: none; }
+  .info-list li {
+    font-size: 0.875rem;
+    color: var(--gray-700);
+    padding: 5px 0;
+    border-bottom: 1px dashed var(--gray-200);
+    line-height: 1.5;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .info-list li:last-child { border-bottom: none; }
+  .info-list li .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+  .std-info .dot { background: var(--teal); }
+  .var-info .dot { background: var(--blue); }
+
+  /* ML uses */
+  .ml-section {
+    animation: fadeUp 0.6s 0.3s ease both;
+    margin-bottom: 1.25rem;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-bottom: 12px;
+  }
+
+  .ml-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .ml-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid var(--gray-200);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .ml-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+
+  .ml-card .use-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-bottom: 7px;
+  }
+  .ml-card.uses-std .use-tag { background: var(--teal-light); color: #085041; }
+  .ml-card.uses-var .use-tag { background: var(--blue-light); color: #1E3A8A; }
+  .ml-card.uses-both .use-tag { background: var(--amber-light); color: #92400E; }
+
+  .ml-card h4 {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 5px;
+  }
+  .ml-card p {
+    font-size: 0.8rem;
+    color: var(--gray-600);
+    line-height: 1.55;
+  }
+  .ml-card .ml-code {
+    margin-top: 8px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    background: var(--gray-100);
+    padding: 5px 8px;
+    border-radius: 6px;
+    color: var(--gray-800);
+  }
+
+  /* Key difference */
+  .diff-card {
+    background: linear-gradient(135deg, #F0FDF9 0%, #EFF6FF 100%);
+    border-radius: 16px;
+    padding: 1.4rem;
+    border: 1px solid var(--gray-200);
+    margin-bottom: 1.25rem;
+    animation: fadeUp 0.6s 0.35s ease both;
+  }
+  .diff-card h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--gray-600);
+    margin-bottom: 12px;
+  }
+  .diff-row {
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .diff-item {
+    flex: 1; min-width: 200px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 1rem;
+    border: 1px solid var(--gray-200);
+    font-size: 0.875rem;
+  }
+  .diff-item strong { font-weight: 700; display: block; margin-bottom: 4px; }
+  .diff-item.std-d strong { color: var(--teal); }
+  .diff-item.var-d strong { color: var(--blue); }
+  .diff-item p { color: var(--gray-600); line-height: 1.55; }
+
+  /* Dry run */
+  .dryrun-card {
+    background: var(--gray-900);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    animation: fadeUp 0.6s 0.4s ease both;
+    color: #fff;
+  }
+  .dryrun-card h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--gray-400);
+    margin-bottom: 1rem;
+  }
+  .dryrun-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .dryrun-block { }
+  .dryrun-block .dtitle {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .dryrun-block.std-d .dtitle { color: var(--teal-mid); }
+  .dryrun-block.var-d .dtitle { color: #93C5FD; }
+
+  .dryrun-block pre {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.75;
+    color: #D1FAE5;
+    background: #0F1C19;
+    padding: 10px 14px;
+    border-radius: 8px;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .dryrun-block.var-d pre { color: #BFDBFE; background: #0D1526; }
+
+  .highlight { color: #FFD700; font-weight: 600; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 620px) {
+    .two-col, .info-grid, .ml-grid, .dryrun-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 1.7rem; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">NumPy · Statistics</div>
+    <h1>Standard Deviation &amp; <span>Variance</span></h1>
+    <p>Formulas, definitions, what they tell you, and how they're used in Machine Learning</p>
+  </div>
+
+  <!-- Definition + Formula cards -->
+  <div class="two-col">
+
+    <!-- STD card -->
+    <div class="card std">
+      <div class="card-icon">📏</div>
+      <h2>Standard Deviation <code>np.std()</code></h2>
+      <p class="def">
+        Measures the average distance of each data point from the mean.
+        Tells you how <strong>spread out</strong> your data is — in the <em>same units</em> as the data.
+      </p>
+
+      <div class="formula-box">
+        <div class="flabel">Formula</div>
+        <div class="ftext">σ = √[ Σ(xᵢ − μ)² / N ]
+
+where:
+  μ  = mean of the data
+  xᵢ = each value
+  N  = total number of values</div>
+      </div>
+
+      <div class="flabel" style="font-size:11px;color:#0F6E56;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Step-by-step</div>
+      <ol class="steps">
+        <li data-n="1.">Find the mean (μ) of all values</li>
+        <li data-n="2.">Subtract mean from each value → (xᵢ − μ)</li>
+        <li data-n="3.">Square each difference → (xᵢ − μ)²</li>
+        <li data-n="4.">Average the squares → divide by N</li>
+        <li data-n="5.">Take the square root → √(result)</li>
+      </ol>
+    </div>
+
+    <!-- VAR card -->
+    <div class="card var">
+      <div class="card-icon">📐</div>
+      <h2>Variance <code>np.var()</code></h2>
+      <p class="def">
+        Measures the average <strong>squared</strong> distance of each point from the mean.
+        It is Standard Deviation squared — in <em>squared units</em>, so harder to interpret directly.
+      </p>
+
+      <div class="formula-box">
+        <div class="flabel">Formula</div>
+        <div class="ftext">σ² = Σ(xᵢ − μ)² / N
+
+where:
+  μ  = mean of the data
+  xᵢ = each value
+  N  = total number of values</div>
+      </div>
+
+      <div class="flabel" style="font-size:11px;color:#1D4ED8;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px">Key relationship</div>
+      <ol class="steps">
+        <li data-n="→">Variance = (Standard Deviation)²</li>
+        <li data-n="→">Std = √Variance — just take the root</li>
+        <li data-n="→">Same steps 1–4 as std, skip the √ root</li>
+        <li data-n="→">Units: if data is in kg, variance is in kg²</li>
+        <li data-n="→">Std is in kg — same unit as original data</li>
+      </ol>
+    </div>
+
+  </div>
+
+  <!-- What information you get -->
+  <div class="info-section">
+    <div class="section-label">What information do they give you?</div>
+    <div class="info-grid">
+      <div class="info-card std-info">
+        <h3>📏 From np.std() you learn…</h3>
+        <ul class="info-list">
+          <li><span class="dot"></span>How far data points typically stray from the mean</li>
+          <li><span class="dot"></span>Low std → data is tightly clustered (consistent)</li>
+          <li><span class="dot"></span>High std → data is widely spread (high variation)</li>
+          <li><span class="dot"></span>Whether features are on similar scales or very different</li>
+          <li><span class="dot"></span>If a new value is unusual (e.g. &gt;3σ from mean = outlier)</li>
+          <li><span class="dot"></span>The "noise level" in your dataset</li>
+        </ul>
+      </div>
+      <div class="info-card var-info">
+        <h3>📐 From np.var() you learn…</h3>
+        <ul class="info-list">
+          <li><span class="dot"></span>The mathematical spread — used in equations that need σ²</li>
+          <li><span class="dot"></span>Low var → values don't deviate much from mean</li>
+          <li><span class="dot"></span>High var → large fluctuations in the data</li>
+          <li><span class="dot"></span>Direction of spread (unlike std, var has additive properties)</li>
+          <li><span class="dot"></span>How much a model's predictions fluctuate (model variance)</li>
+          <li><span class="dot"></span>Foundation for covariance and PCA calculations</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dry run -->
+  <div class="dryrun-card">
+    <h3>🔢 Dry run — array = [2, 4, 6, 8, 10]</h3>
+    <div class="dryrun-grid">
+      <div class="dryrun-block std-d">
+        <div class="dtitle">np.std([2, 4, 6, 8, 10])</div>
+        <pre>mean (μ)    = (2+4+6+8+10)/5 = <span class="highlight">6</span>
+
+differences  = [2-6, 4-6, 6-6, 8-6, 10-6]
+             = [-4, -2, 0, 2, 4]
+
+squared      = [16, 4, 0, 4, 16]
+
+average (σ²) = (16+4+0+4+16)/5 = <span class="highlight">8</span>
+
+std (σ)      = √8 = <span class="highlight">2.83</span>
+
+→ values are on avg 2.83 units from mean</pre>
+      </div>
+      <div class="dryrun-block var-d">
+        <div class="dtitle">np.var([2, 4, 6, 8, 10])</div>
+        <pre>mean (μ)    = (2+4+6+8+10)/5 = <span class="highlight">6</span>
+
+differences  = [2-6, 4-6, 6-6, 8-6, 10-6]
+             = [-4, -2, 0, 2, 4]
+
+squared      = [16, 4, 0, 4, 16]
+
+average (σ²) = (16+4+0+4+16)/5 = <span class="highlight">8</span>
+
+variance     = <span class="highlight">8</span>  (no square root step!)
+
+→ std = √8 = 2.83 confirms the link</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key difference -->
+  <div class="diff-card">
+    <h3>⚖️ Key difference — when to use which?</h3>
+    <div class="diff-row">
+      <div class="diff-item std-d">
+        <strong>Use np.std() when…</strong>
+        <p>You want a human-readable, interpretable measure of spread. Same unit as your data — easy to understand and report.</p>
+      </div>
+      <div class="diff-item var-d">
+        <strong>Use np.var() when…</strong>
+        <p>You need it in a formula (e.g. Batch Norm, PCA, Gaussian equations). Variance has nice mathematical properties like additivity.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ML uses -->
+  <div class="ml-section">
+    <div class="section-label">🤖 Uses in Machine Learning</div>
+    <div class="ml-grid">
+
+      <div class="ml-card uses-both">
+        <span class="use-tag">std + var</span>
+        <h4>Batch Normalization</h4>
+        <p>Normalize layer inputs to zero mean and unit std. Stabilizes training and speeds up convergence.</p>
+        <div class="ml-code">x̂ = (x − μ) / (σ + ε)</div>
+      </div>
+
+      <div class="ml-card uses-std">
+        <span class="use-tag">std</span>
+        <h4>Feature Scaling / Z-score</h4>
+        <p>Scale features so each has mean=0, std=1. Required for SVM, KNN, logistic regression.</p>
+        <div class="ml-code">z = (x − mean) / std</div>
+      </div>
+
+      <div class="ml-card uses-var">
+        <span class="use-tag">var</span>
+        <h4>PCA (Principal Component Analysis)</h4>
+        <p>Covariance matrix is built from variance. PCA finds directions of maximum variance to reduce dimensions.</p>
+        <div class="ml-code">C = np.cov(X.T)</div>
+      </div>
+
+      <div class="ml-card uses-std">
+        <span class="use-tag">std</span>
+        <h4>Outlier / Anomaly Detection</h4>
+        <p>Data point more than 2–3 std from the mean is flagged as an anomaly. Common in data cleaning pipelines.</p>
+        <div class="ml-code">flag = abs(x − μ) > 3σ</div>
+      </div>
+
+      <div class="ml-card uses-var">
+        <span class="use-tag">var</span>
+        <h4>Bias–Variance Tradeoff</h4>
+        <p>Model variance = how much predictions change with different training data. High var → overfitting.</p>
+        <div class="ml-code">Error = Bias² + Variance</div>
+      </div>
+
+      <div class="ml-card uses-both">
+        <span class="use-tag">std + var</span>
+        <h4>Weight Initialization</h4>
+        <p>Xavier / He initialization sets weights using std based on layer size to prevent vanishing/exploding gradients.</p>
+        <div class="ml-code">w ~ N(0, √(2/n))</div>
+      </div>
+
+      <div class="ml-card uses-std">
+        <span class="use-tag">std</span>
+        <h4>Loss Stability Monitoring</h4>
+        <p>Track std of loss across batches. High std means unstable training — lower learning rate or add regularization.</p>
+        <div class="ml-code">np.std(losses[-100:])</div>
+      </div>
+
+      <div class="ml-card uses-var">
+        <span class="use-tag">var</span>
+        <h4>Gaussian / Probabilistic Models</h4>
+        <p>Gaussian distributions are defined by mean and variance. Used in VAEs, Gaussian Naive Bayes, GPs.</p>
+        <div class="ml-code">N(μ, σ²)</div>
+      </div>
+
+      <div class="ml-card uses-std">
+        <span class="use-tag">std</span>
+        <h4>Data Augmentation Noise</h4>
+        <p>Add Gaussian noise with a chosen std to training images/signals to improve model robustness.</p>
+        <div class="ml-code">x + np.random.normal(0, σ)</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer note -->
+  <div style="text-align:center; font-size:0.8rem; color:var(--gray-400); padding-top:1rem; animation: fadeUp 0.6s 0.5s ease both;">
+    <strong style="color:var(--gray-600)">Remember:</strong> &nbsp;Variance = Std² &nbsp;·&nbsp; Std = √Variance &nbsp;·&nbsp; Both measure spread, Std is more interpretable, Var is more math-friendly
+  </div>
+
+</div>
+</body>
+</html>
